@@ -128,9 +128,9 @@ void OnOK(HWND hwnd)
 		ShowBalloonTip(hwnd, IDC_EDIT_SOURCE, TEXT("这是一个无效路径或空文件夹，请选择其他路径。"), TEXT("错误"));
 		return;
 	}
-	TCHAR fullpath[MAX_PATH] = TEXT(""), filename[MAX_PATH] = TEXT(""),pathname[MAX_PATH],drivename[16],extname[MAX_PATH];
+	TCHAR fullpath[MAX_PATH] = TEXT(""), archivepath[MAX_PATH];
 	GetFullPathName(buf, MAX_PATH - 1, fullpath, NULL);
-	_wsplitpath_s(fullpath, drivename, 16,pathname,MAX_PATH, filename, MAX_PATH, extname, MAX_PATH);
+	wsprintf(archivepath, TEXT("%s.exe"), fullpath);
 	PathCombine(fullpath, fullpath, TEXT("*"));
 
 	FILE* fp = NULL;
@@ -176,12 +176,12 @@ void OnOK(HWND hwnd)
 	}
 
 	TCHAR cmdline[400];
-	wsprintf(cmdline, TEXT("7za a archive.7z \"%s\"&copy/b/y 7zS.sfx+config.txt+archive.7z \"%s.exe\"&del config.txt archive.7z"), fullpath, filename);
+	wsprintf(cmdline, TEXT("7za a archive.7z \"%s\"&copy/b/y 7zS.sfx+config.txt+archive.7z \"%s\"&del config.txt archive.7z"), fullpath, archivepath);
 	if (IsDlgButtonChecked(hwnd, IDC_CHECK_LOCATE))
 	{
-		lstrcat(cmdline, TEXT("&explorer/select,"));
-		lstrcat(cmdline, filename);
-		lstrcat(cmdline, TEXT(".exe"));
+		lstrcat(cmdline, TEXT("&explorer/select,\""));
+		lstrcat(cmdline, archivepath);
+		lstrcat(cmdline, TEXT("\""));
 	}
 
 	EndDialog(hwnd, 0);
