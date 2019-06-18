@@ -48,8 +48,19 @@ void OnInitDialog(HWND hwnd)
 {
 	CheckDlgButton(hwnd, IDC_CHECK_PROGRESS, BST_CHECKED);
 	CheckDlgButton(hwnd, IDC_CHECK_LOCATE, BST_CHECKED);
-	if (__argc > 1)
+	switch (__argc)
+	{
+	case 2:
 		SetDlgItemText(hwnd, IDC_EDIT_SOURCE, __wargv[1]);
+		break;
+	case 4:
+		SetDlgItemText(hwnd, IDC_EDIT_RUN_PATH, __wargv[3]);
+	case 3:
+		SetDlgItemText(hwnd, IDC_EDIT_SOURCE, __wargv[1]);
+		ComboBox_SetText(GetDlgItem(hwnd, IDC_COMBO_RUN), __wargv[2]);
+		SendMessage(hwnd, WM_COMMAND, IDOK, 0);
+		break;
+	}
 }
 
 BOOL IsExecutableFile(LPCTSTR filename)

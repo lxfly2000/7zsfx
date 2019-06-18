@@ -1,10 +1,16 @@
 @echo off
-copy Release\7zsfx.exe 7z\
+setlocal EnableDelayedExpansion
+copy %1\7zsfx.exe 7z\
 cd 7z
 7za a archive.7z .\*
 echo ;!@Install@!UTF-8!>>config.txt
 echo RunProgram="7zsfx.exe">>config.txt
 echo ;!@InstallEnd@!>>config.txt
 md ..\build
-copy/b 7zS.sfx+config.txt+archive.7z ..\build\7zsfx.exe
-del 7zsfx.exe config.txt archive.7z
+set name=7zsfx.exe
+if %1==Debug set name=7zsfxd.exe
+copy/b 7zS.sfx+config.txt+archive.7z ..\build\!name!
+cd ..\build
+for /f %%i in ('dir /b !name!') do echo 文件已输出至 %%~dpnxi
+cd ..
+del 7z\7zsfx.exe 7z\config.txt 7z\archive.7z
