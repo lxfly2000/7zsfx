@@ -205,12 +205,23 @@ void RefreshCombobox(HWND hwnd,LPCTSTR path)
 		TCHAR fullpath[MAX_PATH];
 		PathCombine(fullpath, path, fd.cFileName);
 		if (PathIsDirectory(fullpath)==FALSE)
-		{
 			ComboBox_AddString(hCombobox, fd.cFileName);
-			if (ComboBox_GetCount(hCombobox) == 1)
-				ComboBox_SetCurSel(hCombobox, 0);
-		}
 	}
+
+	BOOL foundExe = FALSE, haveFiles = FALSE;
+	for (int i = ComboBox_GetCount(hCombobox) - 1; i >= 0; i--)
+	{
+		TCHAR filename[MAX_PATH];
+		ComboBox_GetLBText(hCombobox, i, filename);
+		if (IsExecutableFile(filename))
+		{
+			ComboBox_SetCurSel(hCombobox, i);
+			foundExe = TRUE;
+		}
+		haveFiles = TRUE;
+	}
+	if (!foundExe && haveFiles)
+		ComboBox_SetCurSel(hCombobox, 0);
 }
 
 void OnBrowse(HWND hwnd)
