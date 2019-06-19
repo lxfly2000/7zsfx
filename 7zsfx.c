@@ -74,17 +74,6 @@ BOOL IsExecutableFile(LPCTSTR filename)
 	return FALSE;
 }
 
-BOOL IsScriptFile(LPCTSTR filename)
-{
-	LPCTSTR ext[] = { TEXT(".bat"),TEXT(".cmd"),TEXT(".js"),TEXT(".vbs") };
-	for (int i = 0; i < ARRAYSIZE(ext); i++)
-	{
-		if (StrCmpI(StrRChr(filename, NULL, '.'), ext[i]) == 0)
-			return TRUE;
-	}
-	return FALSE;
-}
-
 void ShowBalloonTip(HWND hwnd, int id, LPCTSTR msg,LPCTSTR title)
 {
 	EDITBALLOONTIP tip = { sizeof(EDITBALLOONTIP), title,msg,TTI_ERROR_LARGE };
@@ -213,7 +202,9 @@ void RefreshCombobox(HWND hwnd,LPCTSTR path)
 		return;
 	for (BOOL success = TRUE; success; success = FindNextFile(fh, &fd))
 	{
-		if (IsExecutableFile(fd.cFileName)||IsScriptFile(fd.cFileName))
+		TCHAR fullpath[MAX_PATH];
+		PathCombine(fullpath, path, fd.cFileName);
+		if (PathIsDirectory(fullpath)==FALSE)
 		{
 			ComboBox_AddString(hCombobox, fd.cFileName);
 			if (ComboBox_GetCount(hCombobox) == 1)
@@ -239,6 +230,21 @@ void OnEditSourceChange(HWND hwnd)
 	RefreshCombobox(hwnd, text);
 }
 
+void OnComboRunChange(HWND hwnd)
+{
+	TCHAR buf[MAX_PATH];
+	HWND hCombo = GetDlgItem(hwnd, IDC_COMBO_RUN);
+	int sel = ComboBox_GetCurSel(hCombo);
+	if (sel == -1)
+		ComboBox_GetText(GetDlgItem(hwnd, IDC_COMBO_RUN), buf, MAX_PATH - 1);
+	else
+		ComboBox_GetLBText(hCombo, sel, buf);
+	if (IsExecutableFile(buf))
+		SetDlgItemText(hwnd, IDC_STATIC_PARAMETER, TEXT("程序路径(&P)"));
+	else
+		SetDlgItemText(hwnd, IDC_STATIC_PARAMETER, TEXT("运行参数(&P)"));
+}
+
 INT_PTR CALLBACK DialogFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
@@ -262,6 +268,15 @@ INT_PTR CALLBACK DialogFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			if (HIWORD(wParam) == EN_CHANGE)
 				OnEditSourceChange(hwnd);
 			break;
+		case IDC_COMBO_RUN:
+			switch (HIWORD(wParam))
+			{
+			case CBN_EDITCHANGE:
+			case CBN_SELCHANGE:
+				OnComboRunChange(hwnd);
+				break;
+			}
+			break;
 		}
 		break;
 	case WM_DROPFILES:
@@ -276,7 +291,7 @@ INT_PTR CALLBACK DialogFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int WINAPI wWinMain(HINSTANCE hI, HINSTANCE hPrevI, LPWSTR param, int iShowWindow)
+int WINAPI wWinMain(_In_ HINSTANCE hI, _In_opt_ HINSTANCE hPrevI, _In_ LPWSTR param, _In_ int iShowWindow)
 {
 	return (int)DialogBox(hI, MAKEINTRESOURCE(IDD_DIALOG_MAIN), NULL, DialogFunc);
 }
