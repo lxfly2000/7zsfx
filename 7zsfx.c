@@ -307,6 +307,7 @@ INT_PTR CALLBACK DialogFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			MessageBox(hwnd, TEXT("7z 自解压格式压缩文件创建工具\n\n制作：lxfly2000\nhttps://github.com/lxfly2000/7zsfx"), TEXT("关于"), NULL);
 			break;
 		}
+		break;
 	case WM_DROPFILES:
 	{
 		TCHAR filepath[MAX_PATH] = TEXT("");
