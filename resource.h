@@ -13,6 +13,8 @@
 #define IDC_COMBO_RUN                   1010
 #define IDC_CHECK_LOCATE                1013
 #define IDC_STATIC_PARAMETER            1014
+#define IDC_CHECK_LOCATE2               1016
+#define IDC_CHECK_ADMIN                 1016
 
 // Next default values for new objects
 // 

@@ -8,6 +8,8 @@
 
 #pragma comment(lib,"shlwapi.lib")
 
+#define IDM_APP_ABOUT 2000
+
 int CALLBACK ChooseDirectoryClassicCbk(HWND hwnd, UINT msg, LPARAM lParam, LPARAM lpData)
 {
 	switch (msg)
@@ -48,11 +50,15 @@ void OnInitDialog(HWND hwnd)
 {
 	CheckDlgButton(hwnd, IDC_CHECK_PROGRESS, BST_CHECKED);
 	CheckDlgButton(hwnd, IDC_CHECK_LOCATE, BST_CHECKED);
+	CheckDlgButton(hwnd, IDC_CHECK_ADMIN, BST_UNCHECKED);
 	switch (__argc)
 	{
 	case 2:
 		SetDlgItemText(hwnd, IDC_EDIT_SOURCE, __wargv[1]);
 		break;
+	case 5:
+		if (lstrcmpi(__wargv[4], TEXT("admin")) == 0)
+			CheckDlgButton(hwnd, IDC_CHECK_ADMIN, BST_CHECKED);
 	case 4:
 		SetDlgItemText(hwnd, IDC_EDIT_RUN_PATH, __wargv[3]);
 	case 3:
@@ -61,6 +67,9 @@ void OnInitDialog(HWND hwnd)
 		SendMessage(hwnd, WM_COMMAND, IDOK, 0);
 		break;
 	}
+	HMENU hSysMenu = GetSystemMenu(hwnd, FALSE);
+	AppendMenu(hSysMenu, MF_SEPARATOR, NULL, NULL);
+	AppendMenu(hSysMenu, MF_STRING, IDM_APP_ABOUT, TEXT("关于(&A)..."));
 }
 
 BOOL IsExecutableFile(LPCTSTR filename)
@@ -176,7 +185,8 @@ void OnOK(HWND hwnd)
 	}
 
 	TCHAR cmdline[400];
-	wsprintf(cmdline, TEXT("7za a archive.7z \"%s\"&copy/b/y 7zS.sfx+config.txt+archive.7z \"%s\"&del config.txt archive.7z"), fullpath, archivepath);
+	LPCTSTR sfxFile = IsDlgButtonChecked(hwnd, IDC_CHECK_ADMIN) ? TEXT("7zSA.sfx") : TEXT("7zS.sfx");
+	wsprintf(cmdline, TEXT("7za a archive.7z \"%s\"&copy/b/y %s+config.txt+archive.7z \"%s\"&del config.txt archive.7z"), fullpath, sfxFile, archivepath);
 	if (IsDlgButtonChecked(hwnd, IDC_CHECK_LOCATE))
 	{
 		lstrcat(cmdline, TEXT("&explorer/select,\""));
@@ -290,6 +300,13 @@ INT_PTR CALLBACK DialogFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		break;
+	case WM_SYSCOMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDM_APP_ABOUT:
+			MessageBox(hwnd, TEXT("7z 自解压格式压缩文件创建工具\n\n制作：lxfly2000\nhttps://github.com/lxfly2000/7zsfx"), TEXT("关于"), NULL);
+			break;
+		}
 	case WM_DROPFILES:
 	{
 		TCHAR filepath[MAX_PATH] = TEXT("");
