@@ -68,7 +68,7 @@ void OnInitDialog(HWND hwnd)
 		break;
 	}
 	HMENU hSysMenu = GetSystemMenu(hwnd, FALSE);
-	AppendMenu(hSysMenu, MF_SEPARATOR, NULL, NULL);
+	AppendMenu(hSysMenu, MF_SEPARATOR, 0, 0);
 	AppendMenu(hSysMenu, MF_STRING, IDM_APP_ABOUT, TEXT("关于(&A)..."));
 }
 
@@ -304,7 +304,7 @@ INT_PTR CALLBACK DialogFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		switch (LOWORD(wParam))
 		{
 		case IDM_APP_ABOUT:
-			MessageBox(hwnd, TEXT("7z 自解压格式压缩文件创建工具\n\n制作：lxfly2000\nhttps://github.com/lxfly2000/7zsfx"), TEXT("关于"), NULL);
+			MessageBox(hwnd, TEXT("7z 自解压格式压缩文件创建工具\n\n制作：lxfly2000\nhttps://github.com/lxfly2000/7zsfx"), TEXT("关于"), 0);
 			break;
 		}
 		break;
