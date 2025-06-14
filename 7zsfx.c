@@ -36,7 +36,7 @@ BOOL ChooseDirectoryClassic(HWND hWndParent, TCHAR* fullPath, PCTSTR pcszDefault
 	bi.pidlRoot = NULL;
 	bi.pszDisplayName = fullPath;
 	bi.lpszTitle = pcszInstruction;
-	bi.ulFlags = BIF_USENEWUI | BIF_UAHINT;
+	bi.ulFlags = 0;
 	bi.lParam = (LPARAM)pcszDefaultPath;
 	//https://www.arclab.com/en/kb/cppmfc/select-folder-shbrowseforfolder.html
 	bi.lpfn = ChooseDirectoryClassicCbk;
