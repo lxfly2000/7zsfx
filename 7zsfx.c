@@ -1,7 +1,8 @@
+#define _WIN32_WINNT 0x0501
 #include <Windows.h>
 #include <ShlObj.h>
 #include <Shlwapi.h>
-#include <stdbool.h>
+#include <tchar.h>
 #include <windowsx.h>
 #include <stdio.h>
 #include "resource.h"
@@ -9,6 +10,9 @@
 #pragma comment(lib,"shlwapi.lib")
 
 #define IDM_APP_ABOUT 2000
+
+#define TTI_ERROR_LARGE         6
+#define ARRCOUNT(x) (sizeof(x)/sizeof(*(x)))
 
 int CALLBACK ChooseDirectoryClassicCbk(HWND hwnd, UINT msg, LPARAM lParam, LPARAM lpData)
 {
@@ -27,6 +31,7 @@ int CALLBACK ChooseDirectoryClassicCbk(HWND hwnd, UINT msg, LPARAM lParam, LPARA
 BOOL ChooseDirectoryClassic(HWND hWndParent, TCHAR* fullPath, PCTSTR pcszDefaultPath, PCTSTR pcszInstruction)
 {
 	BROWSEINFO bi;
+	LPITEMIDLIST pi;
 	bi.hwndOwner = hWndParent;
 	bi.pidlRoot = NULL;
 	bi.pszDisplayName = fullPath;
@@ -36,7 +41,7 @@ BOOL ChooseDirectoryClassic(HWND hWndParent, TCHAR* fullPath, PCTSTR pcszDefault
 	//https://www.arclab.com/en/kb/cppmfc/select-folder-shbrowseforfolder.html
 	bi.lpfn = ChooseDirectoryClassicCbk;
 	bi.iImage = 0;
-	LPITEMIDLIST pi = SHBrowseForFolder(&bi);
+	pi = SHBrowseForFolder(&bi);
 
 	if (pi)
 	{
@@ -48,26 +53,27 @@ BOOL ChooseDirectoryClassic(HWND hWndParent, TCHAR* fullPath, PCTSTR pcszDefault
 
 void OnInitDialog(HWND hwnd)
 {
+	HMENU hSysMenu;
 	CheckDlgButton(hwnd, IDC_CHECK_PROGRESS, BST_CHECKED);
 	CheckDlgButton(hwnd, IDC_CHECK_LOCATE, BST_CHECKED);
 	CheckDlgButton(hwnd, IDC_CHECK_ADMIN, BST_UNCHECKED);
 	switch (__argc)
 	{
 	case 2:
-		SetDlgItemText(hwnd, IDC_EDIT_SOURCE, __wargv[1]);
+		SetDlgItemText(hwnd, IDC_EDIT_SOURCE, __targv[1]);
 		break;
 	case 5:
-		if (lstrcmpi(__wargv[4], TEXT("admin")) == 0)
+		if (lstrcmpi(__targv[4], TEXT("admin")) == 0)
 			CheckDlgButton(hwnd, IDC_CHECK_ADMIN, BST_CHECKED);
 	case 4:
-		SetDlgItemText(hwnd, IDC_EDIT_RUN_PATH, __wargv[3]);
+		SetDlgItemText(hwnd, IDC_EDIT_RUN_PATH, __targv[3]);
 	case 3:
-		SetDlgItemText(hwnd, IDC_EDIT_SOURCE, __wargv[1]);
-		ComboBox_SetText(GetDlgItem(hwnd, IDC_COMBO_RUN), __wargv[2]);
+		SetDlgItemText(hwnd, IDC_EDIT_SOURCE, __targv[1]);
+		ComboBox_SetText(GetDlgItem(hwnd, IDC_COMBO_RUN), __targv[2]);
 		SendMessage(hwnd, WM_COMMAND, IDOK, 0);
 		break;
 	}
-	HMENU hSysMenu = GetSystemMenu(hwnd, FALSE);
+	hSysMenu = GetSystemMenu(hwnd, FALSE);
 	AppendMenu(hSysMenu, MF_SEPARATOR, 0, 0);
 	AppendMenu(hSysMenu, MF_STRING, IDM_APP_ABOUT, TEXT("关于(&A)..."));
 }
@@ -75,47 +81,63 @@ void OnInitDialog(HWND hwnd)
 BOOL IsExecutableFile(LPCTSTR filename)
 {
 	LPCTSTR ext[] = { TEXT(".exe"),TEXT(".com") };
-	for (int i = 0; i < ARRAYSIZE(ext); i++)
+	int i;
+	for (i = 0; i < ARRCOUNT(ext); i++)
 	{
-		if (StrCmpI(StrRChr(filename, NULL, '.'), ext[i]) == 0)
+		if (StrCmpI(_tcsrchr(filename, '.'), ext[i]) == 0)
 			return TRUE;
 	}
 	return FALSE;
 }
 
-void ShowBalloonTip(HWND hwnd, int id, LPCTSTR msg,LPCTSTR title)
+void ShowBalloonTip(HWND hwnd, int id, LPCWSTR msg,LPCWSTR title)
 {
 	EDITBALLOONTIP tip = { sizeof(EDITBALLOONTIP), title,msg,TTI_ERROR_LARGE };
-	Edit_ShowBalloonTip(GetDlgItem(hwnd, id), &tip);
-	MessageBeep(0);
+	if(Edit_ShowBalloonTip(GetDlgItem(hwnd, id), &tip))
+		MessageBeep(0);
+	else
+		MessageBoxW(hwnd,msg,title,MB_ICONERROR);
 }
 
 BOOL IsDirectoryEmpty(LPCTSTR path)
 {
 	WIN32_FIND_DATA fd;
 	TCHAR checkpath[MAX_PATH] = TEXT("");
+	HANDLE fh;
+	int c;
+	BOOL success;
 	PathCombine(checkpath, path, TEXT("*"));
-	HANDLE fh = FindFirstFile(checkpath, &fd);
+	fh = FindFirstFile(checkpath, &fd);
 	if (fh == INVALID_HANDLE_VALUE)
 		return TRUE;
-	int c = 0;
-	for (BOOL success = TRUE; success; success = FindNextFile(fh, &fd))
+	c = 0;
+	for (success = TRUE; success; success = FindNextFile(fh, &fd))
 		if (StrCmp(fd.cFileName, TEXT(".")) != 0 && StrCmp(fd.cFileName, TEXT("..")) != 0)
 			c++;
 	return c == 0;
 }
 
-int WCharToUtf8(LPCWSTR src,int slen,char *dst,int dlen)
+int TCharToUtf8(LPCTSTR src,int slen,char *dst,int dlen)
 {
-	if (dlen < WideCharToMultiByte(CP_UTF8, 0, src, -1, NULL, 0, NULL, NULL))
-		return 0;
-	return WideCharToMultiByte(CP_UTF8, 0, src, -1, dst, dlen, NULL, NULL);
+	if(sizeof(*src)==2)
+	{
+		WCHAR*wsrc=(WCHAR*)src;
+		if (dlen < WideCharToMultiByte(CP_UTF8, 0, wsrc, -1, NULL, 0, NULL, NULL))
+			return 0;
+		return WideCharToMultiByte(CP_UTF8, 0, wsrc, -1, dst, dlen, NULL, NULL);
+	}
+	else
+	{
+		CHAR*asrc=(CHAR*)src;
+		strncpy(dst,asrc,slen);
+		return slen+1;
+	}
 }
 
 BOOL WriteProperty(FILE* fp, LPCSTR key, LPCTSTR val)
 {
 	char buf[400];
-	int bc = WCharToUtf8(val, lstrlen(val), buf, 400);
+	int bc = TCharToUtf8(val, lstrlen(val), buf, 400);
 	fprintf(fp, "%s=\"", key);
 	if (fwrite(buf, 1, bc - 1, fp) == 0)
 		return FALSE;
@@ -126,24 +148,26 @@ BOOL WriteProperty(FILE* fp, LPCSTR key, LPCTSTR val)
 void OnOK(HWND hwnd)
 {
 	TCHAR buf[MAX_PATH] = TEXT("");
+	TCHAR fullpath[MAX_PATH] = TEXT(""), archivepath[MAX_PATH];
+	FILE *fp,*fpRun;
+	TCHAR cmdline[400];
+	LPCTSTR sfxFile;
 	GetDlgItemText(hwnd, IDC_EDIT_SOURCE, buf, MAX_PATH - 1);
 	if (lstrlen(buf) == 0)
 	{
-		ShowBalloonTip(hwnd, IDC_EDIT_SOURCE, TEXT("请输入路径。"),TEXT("错误"));
+		ShowBalloonTip(hwnd, IDC_EDIT_SOURCE, L"请输入路径。",L"错误");
 		return;
 	}
 	else if(IsDirectoryEmpty(buf))
 	{
-		ShowBalloonTip(hwnd, IDC_EDIT_SOURCE, TEXT("这是一个无效路径或空文件夹，请选择其他路径。"), TEXT("错误"));
+		ShowBalloonTip(hwnd, IDC_EDIT_SOURCE, L"这是一个无效路径或空文件夹，请选择其他路径。", L"错误");
 		return;
 	}
-	TCHAR fullpath[MAX_PATH] = TEXT(""), archivepath[MAX_PATH];
 	GetFullPathName(buf, MAX_PATH - 1, fullpath, NULL);
 	wsprintf(archivepath, TEXT("%s.exe"), fullpath);
 	PathCombine(fullpath, fullpath, TEXT("*"));
 
-	FILE* fp = NULL;
-	_wfopen_s(&fp, TEXT("config.txt"), TEXT("wb+"));
+	fp = _tfopen(TEXT("config.txt"), TEXT("wb+"));
 	if (fp)
 	{
 		fprintf(fp, ";!@Install@!UTF-8!\n");
@@ -184,33 +208,43 @@ void OnOK(HWND hwnd)
 		fclose(fp);
 	}
 
-	TCHAR cmdline[400];
-	LPCTSTR sfxFile = IsDlgButtonChecked(hwnd, IDC_CHECK_ADMIN) ? TEXT("7zSA.sfx") : TEXT("7zS.sfx");
-	wsprintf(cmdline, TEXT("7za a archive.7z \"%s\"&copy/b/y %s+config.txt+archive.7z \"%s\"&del config.txt archive.7z"), fullpath, sfxFile, archivepath);
+	sfxFile = IsDlgButtonChecked(hwnd, IDC_CHECK_ADMIN) ? TEXT("7zSA.sfx") : TEXT("7zS.sfx");
+	wsprintf(cmdline, TEXT("@echo off\n7za a archive.7z \"%s\"\ncopy/b/y %s+config.txt+archive.7z \"%s\"\ndel config.txt\ndel archive.7z"), fullpath, sfxFile, archivepath);
 	if (IsDlgButtonChecked(hwnd, IDC_CHECK_LOCATE))
 	{
-		lstrcat(cmdline, TEXT("&explorer/select,\""));
+		lstrcat(cmdline, TEXT("\nexplorer/select,\""));
 		lstrcat(cmdline, archivepath);
 		lstrcat(cmdline, TEXT("\""));
 	}
+	lstrcat(cmdline, TEXT("\ndel run.bat"));
 
 	EndDialog(hwnd, 0);
-	_wsystem(cmdline);
+	fpRun=_tfopen(TEXT("run.bat"),TEXT("w"));
+	if(fpRun)
+	{
+		_ftprintf(fpRun,cmdline);
+		fclose(fpRun);
+		_tsystem(TEXT("run.bat"));
+	}
 }
 
 void RefreshCombobox(HWND hwnd,LPCTSTR path)
 {
 	HWND hCombobox = GetDlgItem(hwnd, IDC_COMBO_RUN);
+	WIN32_FIND_DATA fd;
+	TCHAR checkpath[MAX_PATH] = TEXT("");
+	HANDLE fh;
+	BOOL success;
+	BOOL foundExe = FALSE, haveFiles = FALSE;
+	int i;
 	while (ComboBox_GetCount(hCombobox))
 		ComboBox_DeleteString(hCombobox, 0);
 
-	WIN32_FIND_DATA fd;
-	TCHAR checkpath[MAX_PATH] = TEXT("");
 	PathCombine(checkpath, path, TEXT("*"));
-	HANDLE fh = FindFirstFile(checkpath, &fd);
+	fh = FindFirstFile(checkpath, &fd);
 	if (fh == INVALID_HANDLE_VALUE)
 		return;
-	for (BOOL success = TRUE; success; success = FindNextFile(fh, &fd))
+	for (success = TRUE; success; success = FindNextFile(fh, &fd))
 	{
 		TCHAR fullpath[MAX_PATH];
 		PathCombine(fullpath, path, fd.cFileName);
@@ -218,8 +252,7 @@ void RefreshCombobox(HWND hwnd,LPCTSTR path)
 			ComboBox_AddString(hCombobox, fd.cFileName);
 	}
 
-	BOOL foundExe = FALSE, haveFiles = FALSE;
-	for (int i = ComboBox_GetCount(hCombobox) - 1; i >= 0; i--)
+	for (i = ComboBox_GetCount(hCombobox) - 1; i >= 0; i--)
 	{
 		TCHAR filename[MAX_PATH];
 		ComboBox_GetLBText(hCombobox, i, filename);
@@ -309,18 +342,18 @@ INT_PTR CALLBACK DialogFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_DROPFILES:
-	{
-		TCHAR filepath[MAX_PATH] = TEXT("");
-		DragQueryFile((HDROP)wParam, 0, filepath, MAX_PATH);
-		DragFinish((HDROP)wParam);
-		SetDlgItemText(hwnd, IDC_EDIT_SOURCE, filepath);
-		break;
-	}
+		{
+			TCHAR filepath[MAX_PATH] = TEXT("");
+			DragQueryFile((HDROP)wParam, 0, filepath, MAX_PATH);
+			DragFinish((HDROP)wParam);
+			SetDlgItemText(hwnd, IDC_EDIT_SOURCE, filepath);
+			break;
+		}
 	}
 	return 0;
 }
 
-int WINAPI wWinMain(_In_ HINSTANCE hI, _In_opt_ HINSTANCE hPrevI, _In_ LPWSTR param, _In_ int iShowWindow)
+int WINAPI _tWinMain(HINSTANCE hI, HINSTANCE hPrevI, LPTSTR param, int iShowWindow)
 {
 	return (int)DialogBox(hI, MAKEINTRESOURCE(IDD_DIALOG_MAIN), NULL, DialogFunc);
 }
