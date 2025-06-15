@@ -14,15 +14,19 @@
 #define TTI_ERROR_LARGE         6
 #define ARRCOUNT(x) (sizeof(x)/sizeof(*(x)))
 
+BOOL browseDlgInitOk=FALSE;
+
 int CALLBACK ChooseDirectoryClassicCbk(HWND hwnd, UINT msg, LPARAM lParam, LPARAM lpData)
 {
 	switch (msg)
 	{
 	case BFFM_INITIALIZED:
 		SendMessage(hwnd, BFFM_SETSELECTION, TRUE, lpData);
+		browseDlgInitOk=TRUE;
 		break;
 	case BFFM_SELCHANGED:
-		SendMessage(hwnd, BFFM_SETSELECTION, FALSE, lParam);
+		if(browseDlgInitOk)
+			SendMessage(hwnd, BFFM_SETSELECTION, FALSE, lParam);
 		break;
 	}
 	return 0;
@@ -36,7 +40,7 @@ BOOL ChooseDirectoryClassic(HWND hWndParent, TCHAR* fullPath, PCTSTR pcszDefault
 	bi.pidlRoot = NULL;
 	bi.pszDisplayName = fullPath;
 	bi.lpszTitle = pcszInstruction;
-	bi.ulFlags = 0;
+	bi.ulFlags = BIF_USENEWUI | BIF_UAHINT;
 	bi.lParam = (LPARAM)pcszDefaultPath;
 	//https://www.arclab.com/en/kb/cppmfc/select-folder-shbrowseforfolder.html
 	bi.lpfn = ChooseDirectoryClassicCbk;
@@ -270,6 +274,7 @@ void RefreshCombobox(HWND hwnd,LPCTSTR path)
 void OnBrowse(HWND hwnd)
 {
 	TCHAR path[MAX_PATH] = TEXT("");
+	browseDlgInitOk=FALSE;
 	GetDlgItemText(hwnd, IDC_EDIT_SOURCE, path, MAX_PATH - 1);
 	if (lstrlen(path) == 0)
 		GetCurrentDirectory(MAX_PATH, path);
