@@ -79,7 +79,7 @@ void OnInitDialog(HWND hwnd)
 	}
 	hSysMenu = GetSystemMenu(hwnd, FALSE);
 	AppendMenu(hSysMenu, MF_SEPARATOR, 0, 0);
-	AppendMenu(hSysMenu, MF_STRING, IDM_APP_ABOUT, TEXT("关于(&A)..."));
+	AppendMenu(hSysMenu, MF_STRING, IDM_APP_ABOUT, TEXT("&About..."));
 }
 
 BOOL IsExecutableFile(LPCTSTR filename)
@@ -159,12 +159,12 @@ void OnOK(HWND hwnd)
 	GetDlgItemText(hwnd, IDC_EDIT_SOURCE, buf, MAX_PATH - 1);
 	if (lstrlen(buf) == 0)
 	{
-		ShowBalloonTip(hwnd, IDC_EDIT_SOURCE, L"请输入路径。",L"错误");
+		ShowBalloonTip(hwnd, IDC_EDIT_SOURCE, L"Please specify a path.",L"Error");
 		return;
 	}
 	else if(IsDirectoryEmpty(buf))
 	{
-		ShowBalloonTip(hwnd, IDC_EDIT_SOURCE, L"这是一个无效路径或空文件夹，请选择其他路径。", L"错误");
+		ShowBalloonTip(hwnd, IDC_EDIT_SOURCE, L"Invalid or empty path, please choose another path.", L"Error");
 		return;
 	}
 	GetFullPathName(buf, MAX_PATH - 1, fullpath, NULL);
@@ -278,7 +278,7 @@ void OnBrowse(HWND hwnd)
 	GetDlgItemText(hwnd, IDC_EDIT_SOURCE, path, MAX_PATH - 1);
 	if (lstrlen(path) == 0)
 		GetCurrentDirectory(MAX_PATH, path);
-	if (ChooseDirectoryClassic(hwnd, path, path, TEXT("选择要压缩的文件目录。")))
+	if (ChooseDirectoryClassic(hwnd, path, path, TEXT("Choose a path to compress.")))
 		SetDlgItemText(hwnd, IDC_EDIT_SOURCE, path);
 }
 
@@ -299,9 +299,9 @@ void OnComboRunChange(HWND hwnd)
 	else
 		ComboBox_GetLBText(hCombo, sel, buf);
 	if (IsExecutableFile(buf))
-		SetDlgItemText(hwnd, IDC_STATIC_PARAMETER, TEXT("程序路径(&P)"));
+		SetDlgItemText(hwnd, IDC_STATIC_PARAMETER, TEXT("&Path to executable"));
 	else
-		SetDlgItemText(hwnd, IDC_STATIC_PARAMETER, TEXT("运行参数(&P)"));
+		SetDlgItemText(hwnd, IDC_STATIC_PARAMETER, TEXT("Running &parameter"));
 }
 
 INT_PTR CALLBACK DialogFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -342,7 +342,7 @@ INT_PTR CALLBACK DialogFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		switch (LOWORD(wParam))
 		{
 		case IDM_APP_ABOUT:
-			MessageBox(hwnd, TEXT("7z 自解压格式压缩文件创建工具\n\n制作：lxfly2000\nhttps://github.com/lxfly2000/7zsfx"), TEXT("关于"), 0);
+			MessageBox(hwnd, TEXT("7z self-extracting file creator\n\nBy: lxfly2000\nhttps://github.com/lxfly2000/7zsfx"), TEXT("About"), 0);
 			break;
 		}
 		break;

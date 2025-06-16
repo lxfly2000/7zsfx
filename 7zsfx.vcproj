@@ -131,7 +131,13 @@
 			<File
 				RelativePath=".\7zsfx.rc">
 			</File>
+			<File
+				RelativePath=".\setup.ico">
+			</File>
 		</Filter>
+		<File
+			RelativePath=".\manifest.xml">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

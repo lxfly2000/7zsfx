@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (P.R.C.) resources
+// 中文(中华人民共和国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 #ifdef _WIN32
@@ -27,18 +27,18 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE MOVEABLE PURE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE MOVEABLE PURE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""winres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE MOVEABLE PURE 
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -47,14 +47,13 @@ END
 #endif    // APSTUDIO_INVOKED
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,3,2,0
+ FILEVERSION 1,3,3,0
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -70,14 +69,14 @@ BEGIN
     BEGIN
         BLOCK "080404b0"
         BEGIN
-            VALUE "CompanyName", "lxfly2000\0"
-            VALUE "FileDescription", "7z 自解压格式压缩文件创建工具\0"
-            VALUE "FileVersion", "1.3.2.0\0"
-            VALUE "InternalName", "7zsfx.exe\0"
-            VALUE "LegalCopyright", "Copyright (C) 2019 lxfly2000\0"
-            VALUE "OriginalFilename", "7zsfx.exe\0"
-            VALUE "ProductName", "7z SFX Utility\0"
-            VALUE "ProductVersion", "1.0.0.0\0"
+            VALUE "CompanyName", "lxfly2000"
+            VALUE "FileDescription", "7z 自解压格式压缩文件创建工具"
+            VALUE "FileVersion", "1.3.3.0"
+            VALUE "InternalName", "7zsfx.exe"
+            VALUE "LegalCopyright", "Copyright (C) 2019 lxfly2000"
+            VALUE "OriginalFilename", "7zsfx.exe"
+            VALUE "ProductName", "7z SFX Utility"
+            VALUE "ProductVersion", "1.0.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -86,8 +85,6 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -95,31 +92,31 @@ END
 //
 
 IDD_DIALOG_MAIN DIALOGEX 0, 0, 339, 106
-STYLE DS_MODALFRAME | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_ACCEPTFILES
-CAPTION "7z 自解压格式压缩文件创建工具"
-FONT 9, "宋体"
+CAPTION "7z self-extracting file creator"
+FONT 9, "宋体", 0, 0, 0x1
 BEGIN
-    LTEXT           "选择要压缩的文件夹(&C)",IDC_STATIC,7,10,82,8
+    LTEXT           "Path to &compress",IDC_STATIC,7,10,82,8
     EDITTEXT        IDC_EDIT_SOURCE,92,7,187,14,ES_AUTOHSCROLL
-    PUSHBUTTON      "浏览(&B)...",IDC_BUTTON_BROWSE,282,7,50,14
-    LTEXT           "对话框标题(可选, &T)",IDC_STATIC,7,26,82,8
+    PUSHBUTTON      "&Browse...",IDC_BUTTON_BROWSE,282,7,50,14
+    LTEXT           "Dialog &title",IDC_STATIC,7,26,82,8
     EDITTEXT        IDC_EDIT_TITLE,92,23,240,14,ES_AUTOHSCROLL
-    LTEXT           "对话框内容(可选, &M)",IDC_STATIC,7,42,82,8
+    LTEXT           "Dialog &main text",IDC_STATIC,7,42,82,8
     EDITTEXT        IDC_EDIT_MESSAGE,92,39,240,14,ES_AUTOHSCROLL
-    LTEXT           "解压后运行(&R)",IDC_STATIC,7,57,82,8
+    LTEXT           "&Run after extracting",IDC_STATIC,7,57,82,8
     COMBOBOX        IDC_COMBO_RUN,92,55,240,221,CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "程序路径或参数(&P)",IDC_STATIC_PARAMETER,7,72,82,8
+    LTEXT           "&Path or parameter",IDC_STATIC_PARAMETER,7,72,82,8
     EDITTEXT        IDC_EDIT_RUN_PATH,92,69,240,14,ES_AUTOHSCROLL
-    CONTROL         "显示解压进度(&S)",IDC_CHECK_PROGRESS,"Button",
+    CONTROL         "&Show progress",IDC_CHECK_PROGRESS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,87,82,10
-    CONTROL         "完成后打开存放目录(&E)",IDC_CHECK_LOCATE,"Button",
+    CONTROL         "Locat&e output file",IDC_CHECK_LOCATE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,92,87,98,10
-    CONTROL         "需要管理员权限(&A)",IDC_CHECK_ADMIN,"Button",
+    CONTROL         "Need &administrator",IDC_CHECK_ADMIN,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,193,87,86,10
-    DEFPUSHBUTTON   "确定(&O)",IDOK,282,85,50,14
+    DEFPUSHBUTTON   "&OK",IDOK,282,85,50,14
 END
 
 
@@ -129,7 +126,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO MOVEABLE PURE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_DIALOG_MAIN, DIALOG
     BEGIN
@@ -153,15 +150,15 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON_MAIN           ICON    DISCARDABLE     "setup.ico"
+IDI_ICON_MAIN           ICON                    "setup.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// 24
+// RT_MANIFEST
 //
 
-1                       24      DISCARDABLE     "manifest.xml"
-#endif    // Chinese (P.R.C.) resources
+1                       RT_MANIFEST             "manifest.xml"
+#endif    // 中文(中华人民共和国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
